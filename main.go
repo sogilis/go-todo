@@ -19,17 +19,6 @@ type TodoItem struct {
 
 var items []TodoItem = []TodoItem{}
 
-func handleRoot(w http.ResponseWriter, req *http.Request) {
-  // The "/" pattern matches everything, so we need to check
-  // that we're at the root here.
-  if req.URL.Path != "/" {
-      http.NotFound(w, req)
-      return
-  }
-
-  fmt.Fprintf(w, "Welcome to the home page!")
-}
-
 func handleWebError(w http.ResponseWriter, e error, status int) {
 	w.WriteHeader(status)
 	fmt.Fprintf(w, "Error: %v", e)
@@ -50,7 +39,7 @@ func listItems(w http.ResponseWriter, req *http.Request) {
 			Name: string(data),
 			Completed: false,
 		})
-		
+
 		err = save()
 		if err != nil {
 			handleWebError(w, err, http.StatusInternalServerError)
@@ -85,29 +74,29 @@ func singleItem(w http.ResponseWriter, req *http.Request) {
 	}
 
 	if req.Method == "DELETE" {
-		
+
 		items = append(items[:n], items[n+1:]...)
-		
+
 		err = save()
 		if err != nil {
 			handleWebError(w, err, http.StatusInternalServerError)
 			return
 		}
-		
+
 		w.WriteHeader(http.StatusNoContent)
-		
-	} else {	
+
+	} else {
 
 		res, err := json.Marshal(items[n])
-	
+
 		if err != nil {
 			handleWebError(w, err, http.StatusInternalServerError)
 			return
 		}
-	
+
 		w.Header().Set("Content-Type", "application/json; encoding=\"utf-8\"")
 		w.Write(res)
-	
+
 	}
 }
 
@@ -117,44 +106,42 @@ func save() error {
 		return err
 	}
 	defer f.Close()
-	
+
 	res, err := json.Marshal(items)
 	if err != nil {
 		return err
 	}
-	
+
 	_, err = f.Write(res)
 	if err != nil {
 		return err
 	}
-	
+
 	return nil
 }
 
 func open() error {
-	
+
 	f, err := os.Open("items.json")
 	if err != nil {
 		return err
 	}
 	defer f.Close()
-	
+
 	data, err := ioutil.ReadAll(f)
 	if err != nil {
 		return err
 	}
 
-	
 	err = json.Unmarshal(data, &items)
 	if err != nil {
 		return err
 	}
-	
+
 	return nil
 }
 
 func registerRoutes(mux *http.ServeMux) {
-	mux.HandleFunc("/", handleRoot)
 	mux.HandleFunc("/list", listItems)
 	mux.HandleFunc("/list/", singleItem)
 }
@@ -165,7 +152,7 @@ func main() {
 	err := open()
 	if err != nil {
 		log.Fatal(err)
-	}	
+	}
 	log.Printf("Starting TODO server on port %d\n", *arg_port)
 	mux := http.NewServeMux()
 	registerRoutes(mux)
