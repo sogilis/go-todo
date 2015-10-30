@@ -24,6 +24,8 @@ func handleWebError(w http.ResponseWriter, e error, status int) {
 	fmt.Fprintf(w, "Error: %v", e)
 }
 
+// GET /list
+// POST /list
 func listItems(w http.ResponseWriter, req *http.Request) {
 
 	switch(req.Method) {
@@ -62,6 +64,8 @@ func listItems(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
+// GET /list/n
+// DELETE /list/n
 func singleItem(w http.ResponseWriter, req *http.Request) {
 	lastItem := path.Base(req.URL.Path)
 	n, err := strconv.Atoi(lastItem)
